@@ -4,7 +4,7 @@ import queryString from "query-string";
 import "./App.css";
 
 const LivePhotosKitReact = ({ className, photoSrc, videoSrc }) => {
-  let nodeRef = useRef(null);
+  const nodeRef = useRef(null);
 
   useEffect(() => {
     const player = LivePhotosKit.Player(nodeRef.current);
