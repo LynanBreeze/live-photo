@@ -17,7 +17,7 @@ const LivePhotosKitReact = ({ className, photoSrc, videoSrc }) => {
 
 const LivePhoto = (props) => {
   const { photoSrc, videoSrc, muted, loop, useApple } = props;
-  const [imgReady, setImgReady] = useState(false);
+  const [imageReady, setImageReady] = useState(false);
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [videoRunning, setVideoRunning] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
@@ -43,7 +43,7 @@ const LivePhoto = (props) => {
   };
 
   const onImageLoad = () => {
-    setImgReady(true);
+    setImageReady(true);
     if (
       /iphone/i.test(navigator.userAgent) &&
       /micromessenger/i.test(navigator.userAgent)
@@ -81,7 +81,7 @@ const LivePhoto = (props) => {
             className='live-img'
             src={photoSrc}
             onLoad={onImageLoad}
-            style={{ opacity: Number(imgReady) }}
+            style={{ opacity: Number(imageReady) }}
           />
           <video
             playsInline
