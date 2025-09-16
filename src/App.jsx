@@ -122,7 +122,7 @@ function App() {
     setPhotoSrc(picUrl || photoSrc);
     setVideoSrc(videoUrl || videoSrc);
     setMuted(!!muted);
-    setVolume(volume);
+    setVolume(volume || 100);
     setUseApple(!!useApple);
     setLoop(!!loop);
   }, []);
