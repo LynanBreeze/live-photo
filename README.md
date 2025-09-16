@@ -17,6 +17,7 @@ A simple live-photo React component.
 | videoSrc  | string, required |
 | loop               |  null | 1 |
 | muted               |  null | 1 |
+| volume               |  null | 100 |
 | useApple               |  null | 1 |
 
 

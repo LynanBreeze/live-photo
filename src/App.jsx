@@ -16,7 +16,7 @@ const LivePhotosKitReact = ({ className, photoSrc, videoSrc }) => {
 };
 
 const LivePhoto = (props) => {
-  const { photoSrc, videoSrc, muted, loop, useApple } = props;
+  const { photoSrc, videoSrc, muted, loop, useApple, volume } = props;
   const [imageReady, setImageReady] = useState(false);
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [videoRunning, setVideoRunning] = useState(false);
@@ -29,6 +29,9 @@ const LivePhoto = (props) => {
     } else {
       setVideoPlaying(true);
       videoRef.current.play();
+      if(!muted) {
+        videoRef.current.volume = volume / 100;
+      } 
     }
   };
 
@@ -109,15 +112,17 @@ function App() {
   const [videoSrc, setVideoSrc] = useState("");
   const [useApple, setUseApple] = useState(false);
   const [muted, setMuted] = useState(false);
+  const [volume, setVolume] = useState(100);
   const [loop, setLoop] = useState(false);
 
   useEffect(() => {
     const parsed = queryString.parse(location.search);
-    const { picUrl, videoUrl, photoSrc, videoSrc, muted, loop, useApple } =
+    const { picUrl, videoUrl, photoSrc, videoSrc, muted, loop, useApple, volume } =
       parsed;
     setPhotoSrc(picUrl || photoSrc);
     setVideoSrc(videoUrl || videoSrc);
     setMuted(!!muted);
+    setVolume(volume);
     setUseApple(!!useApple);
     setLoop(!!loop);
   }, []);
@@ -131,6 +136,7 @@ function App() {
           muted={muted}
           useApple={useApple}
           loop={loop}
+          volume={volume}
         />
       ) : null}
     </>
