@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import * as LivePhotosKit from "livephotoskit";
 import queryString from "query-string";
 import "./App.css";
+import { useVideoDownloader } from "./useVideoDownloader";
+import { useVisible } from "./useVisible";
+import { CircleProgress } from "./Progress";
 
 const LivePhotosKitReact = ({ className, photoSrc, videoSrc }) => {
   const nodeRef = useRef(null);
@@ -20,23 +23,43 @@ const LivePhoto = (props) => {
   const [imageReady, setImageReady] = useState(false);
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [videoRunning, setVideoRunning] = useState(false);
-  const [videoReady, setVideoReady] = useState(false);
   const videoRef = useRef(null);
 
-  const playVideo = () => {
+  const { ref: livePhotoRef } = useVisible({
+    threshold: 0.2,
+    onChange: (v) => {
+      if (!v && videoRunning) {
+        videoRef.current.pause();
+      }
+    },
+  });
+
+  const { progress, blobUrl, download } = useVideoDownloader();
+
+  useEffect(() => {
+    if (videoSrc) {
+      download(videoSrc);
+    }
+  }, [videoSrc, download]);
+
+  const playVideo = (e) => {
+    e.stopPropagation();
+    if (progress !== 100) return;
     if (videoRunning) {
       videoRef.current.pause();
     } else {
       setVideoPlaying(true);
       videoRef.current.play();
-      if(!muted) {
+      if (!muted) {
         videoRef.current.volume = volume / 100;
-      } 
+      }
     }
   };
 
   const openPreview = (url) => {
-    window.top.postMessage(url, window.location.origin);
+    setTimeout(() => {
+      window.top.postMessage(url, window.location.origin);
+    }, 0);
   };
 
   const onClick = (e) => {
@@ -47,18 +70,10 @@ const LivePhoto = (props) => {
 
   const onImageLoad = () => {
     setImageReady(true);
-    if (
-      /iphone/i.test(navigator.userAgent) &&
-      /micromessenger/i.test(navigator.userAgent)
-    ) {
-      setTimeout(() => {
-        setVideoReady(true);
-      }, 500);
-    }
   };
 
   return (
-    <div className='live-photo' onClick={onClick}>
+    <div ref={livePhotoRef} className='live-photo' onClick={onClick}>
       {useApple ? (
         <LivePhotosKitReact
           className='live-img'
@@ -67,17 +82,22 @@ const LivePhoto = (props) => {
         />
       ) : (
         <>
-          <div
-            className='live-trigger'
-            onClick={playVideo}
-            style={{ opacity: Number(videoReady) }}
-          >
-            <div
-              className='trigger-icon'
-              style={{
-                animationPlayState: videoRunning ? "running" : "paused",
-              }}
-            ></div>
+          <div className='live-trigger' onClick={playVideo}>
+            <div className='icon-wrap'>
+              <div
+                className={`trigger-icon ${progress === 100 ? "ready" : ""}`}
+                style={{
+                  animationPlayState: videoRunning ? "running" : "paused",
+                }}
+              ></div>
+              <CircleProgress
+                className={`progress-circle ${progress === 100 ? "loaded" : ""}`}
+                size={25}
+                strokeWidth={3}
+                progress={progress}
+                children={""}
+              />
+            </div>
             <span className='trigger-text'>LIVE</span>
           </div>
           <img
@@ -86,21 +106,21 @@ const LivePhoto = (props) => {
             onLoad={onImageLoad}
             style={{ opacity: Number(imageReady) }}
           />
-          <video
-            playsInline
-            webkit-playsinline
-            loop={loop}
-            muted={muted}
-            ref={videoRef}
-            className='live-video'
-            src={videoSrc}
-            style={{ opacity: Number(videoPlaying) }}
-            onCanPlay={() => setVideoReady(true)}
-            onLoadedMetadata={() => setVideoReady(true)}
-            onPlaying={() => setVideoRunning(true)}
-            onPause={() => setVideoRunning(false)}
-            onEnded={() => setVideoPlaying(false)}
-          ></video>
+          {!!blobUrl && (
+            <video
+              playsInline
+              webkit-playsinline='true'
+              loop={loop}
+              muted={muted}
+              ref={videoRef}
+              className='live-video'
+              src={blobUrl}
+              style={{ opacity: Number(videoPlaying) }}
+              onPlaying={() => setVideoRunning(true)}
+              onPause={() => setVideoRunning(false)}
+              onEnded={() => setVideoPlaying(false)}
+            ></video>
+          )}
         </>
       )}
     </div>
@@ -117,8 +137,16 @@ function App() {
 
   useEffect(() => {
     const parsed = queryString.parse(location.search);
-    const { picUrl, videoUrl, photoSrc, videoSrc, muted, loop, useApple, volume } =
-      parsed;
+    const {
+      picUrl,
+      videoUrl,
+      photoSrc,
+      videoSrc,
+      muted,
+      loop,
+      useApple,
+      volume,
+    } = parsed;
     setPhotoSrc(picUrl || photoSrc);
     setVideoSrc(videoUrl || videoSrc);
     setMuted(!!muted);
