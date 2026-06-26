@@ -13,7 +13,7 @@ export function useVideoDownloader() {
 
     if (!res.ok || !res.body) return null;
 
-    const contentLength = Number(res.headers.get("Content-Length") || 0);
+    const contentLength = Number(res.headers.get("Content-Length") || res.headers.get("filesize") || 0);
     const hasLength = contentLength > 0;
 
     const reader = res.body.getReader();
@@ -26,7 +26,7 @@ export function useVideoDownloader() {
 
     if (!hasLength) {
       fakeTimer = setInterval(() => {
-        fakeProgress = Math.min(fakeProgress + 1, 95);
+        fakeProgress = Math.min(fakeProgress + 1, 90);
         setProgress(fakeProgress);
       }, 100);
     }

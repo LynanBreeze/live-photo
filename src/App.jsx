@@ -63,7 +63,7 @@ const LivePhoto = (props) => {
   };
 
   const onClick = (e) => {
-    if (!/trigger/.test(e.target.className) && !videoPlaying) {
+    if (!/trigger|lpk\-badge/.test(e.target.className) && !videoPlaying) {
       openPreview(photoSrc);
     }
   };
@@ -88,6 +88,7 @@ const LivePhoto = (props) => {
                 className={`trigger-icon ${progress === 100 ? "ready" : ""}`}
                 style={{
                   animationPlayState: videoRunning ? "running" : "paused",
+                  opacity: Number(imageReady),
                 }}
               ></div>
               <CircleProgress
